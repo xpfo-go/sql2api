@@ -37,11 +37,11 @@ Content-Type: application/json
 
 # todo list:
 
-1. 支持多个数据库连接
+1. 支持多个数据库连接 ✅
 2. 支持更多数据库类型 pgsql clickhouse redis...
 3. 接口支持分页? 待定
 4. 直接生成到文件， gin、spring、php...
-5. 路由持久化
+5. 路由持久化, 数据库链接持久化， 引入sqlite
 
 ## todo 3个模块
 1. 添加数据库

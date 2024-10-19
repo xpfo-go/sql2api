@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/xpfo-go/logs"
@@ -14,12 +15,12 @@ const (
 	defaultConnMaxLifetime = 10 * time.Minute
 )
 
-var (
-	DefaultDBClient *DBClient
-)
+//var (
+//	DefaultDBClient *MysqlClient
+//)
 
-// NewDBClient :
-func NewDBClient(cfg *MysqlConfig) *DBClient {
+// NewMysqlClient :
+func NewMysqlClient(cfg *MysqlConfig) *MysqlClient {
 	dataSource := fmt.Sprintf("%s:%s@(%s:%d)/%s?charset=%s&parseTime=True&interpolateParams=true&loc=%s&time_zone=%s",
 		cfg.User,
 		cfg.Password,
@@ -60,7 +61,7 @@ func NewDBClient(cfg *MysqlConfig) *DBClient {
 		}
 	}
 
-	return &DBClient{
+	return &MysqlClient{
 		name:            cfg.Database,
 		dataSource:      dataSource,
 		maxOpenConn:     maxOpenConn,
@@ -69,8 +70,8 @@ func NewDBClient(cfg *MysqlConfig) *DBClient {
 	}
 }
 
-// DBClient MySQL DB Instance
-type DBClient struct {
+// MysqlClient MySQL DB Instance
+type MysqlClient struct {
 	name            string
 	DB              *sqlx.DB
 	dataSource      string
@@ -93,7 +94,8 @@ type MysqlConfig struct {
 }
 
 // TestConnection ...
-func (db *DBClient) TestConnection() (err error) {
+func (db *MysqlClient) TestConnection() (err error) {
+	// TODO：超时控制
 	conn, err := sqlx.Connect("mysql", db.dataSource)
 	if err != nil {
 		return
@@ -104,7 +106,8 @@ func (db *DBClient) TestConnection() (err error) {
 }
 
 // Connect to db, and update some settings
-func (db *DBClient) Connect() error {
+func (db *MysqlClient) Connect() error {
+	// TODO：超时控制
 	var err error
 	db.DB, err = sqlx.Connect("mysql", db.dataSource)
 	if err != nil {
@@ -121,8 +124,12 @@ func (db *DBClient) Connect() error {
 	return nil
 }
 
+func (db *MysqlClient) Query(sql string) (*sql.Rows, error) {
+	return db.DB.Query(sql)
+}
+
 // Close db connection
-func (db *DBClient) Close() {
+func (db *MysqlClient) Close() {
 	if db.DB != nil {
 		_ = db.DB.Close()
 	}

@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/xpfo-go/logs"
-	"github.com/xpfo-go/sql2api/database"
-	"github.com/xpfo-go/sql2api/inject/api"
+	"github.com/xpfo-go/sql2api/api"
 	"github.com/xpfo-go/sql2api/server"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -38,21 +36,19 @@ func Start(cmd *cobra.Command) {
 	ctx, cancelFunc := context.WithCancel(context.Background())
 
 	// 3. default database
-	database.DefaultDBClient = database.NewDBClient(&database.MysqlConfig{
-		Database: "demo",
-		Host:     "127.0.0.1",
-		User:     "root",
-		Password: "123456",
-		Port:     3306,
-	})
+	//database.DefaultDBClient = database.NewMysqlClient(&database.MysqlConfig{
+	//	Database: "demo",
+	//	Host:     "127.0.0.1",
+	//	User:     "root",
+	//	Password: "123456",
+	//	Port:     3306,
+	//})
 
-	if err := database.DefaultDBClient.Connect(); err != nil {
-		panic(err.Error())
-	}
+	//if err := database.DefaultDBClient.Connect(); err != nil {
+	//	panic(err.Error())
+	//}
 
-	server.GetRouter().RegisterFunc(http.MethodGet, "/api/list", api.ListApi)
-	server.GetRouter().RegisterFunc(http.MethodPost, "/api/create", api.CreateApi)
-	server.GetRouter().RegisterFunc(http.MethodPost, "/api/delete", api.DeleteApi)
+	api.RegisterRouter()
 
 	// 4. start the server
 	port, err := cmd.Flags().GetInt("port")

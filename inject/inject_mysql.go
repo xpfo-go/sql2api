@@ -6,14 +6,14 @@ import (
 	"net/http"
 )
 
-func CreateHandler(sql string) func(w http.ResponseWriter, r *http.Request) {
+func CreateHandler(db *database.MysqlClient, sql string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := database.DefaultDBClient.TestConnection(); err != nil {
+		if err := db.TestConnection(); err != nil {
 			util.ResponseJson(&w, http.StatusInternalServerError, "Connect db failed.")
 			return
 		}
 
-		rows, err := database.DefaultDBClient.DB.Query(sql)
+		rows, err := db.DB.Query(sql)
 		if err != nil {
 			util.ResponseJson(&w, http.StatusInternalServerError, "Query error.")
 			return

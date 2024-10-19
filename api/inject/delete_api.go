@@ -1,4 +1,4 @@
-package api
+package inject
 
 import (
 	"github.com/xpfo-go/sql2api/server"
@@ -13,7 +13,7 @@ type DeleteApiReq struct {
 func DeleteApi(w http.ResponseWriter, r *http.Request) {
 	var params DeleteApiReq
 	if err := util.BindJson(r, &params); err != nil {
-		util.ResponseJson(&w, http.StatusInternalServerError, []byte(err.Error()))
+		util.ResponseJson(&w, http.StatusBadRequest, []byte(err.Error()))
 		return
 	}
 

@@ -1,7 +1,8 @@
-package api
+package inject
 
 import (
 	"fmt"
+	"github.com/xpfo-go/sql2api/database"
 	"github.com/xpfo-go/sql2api/inject"
 	"github.com/xpfo-go/sql2api/server"
 	"github.com/xpfo-go/sql2api/util"
@@ -9,15 +10,22 @@ import (
 )
 
 type CreateApiReq struct {
-	Method string `json:"method"`
-	Url    string `json:"url"`
-	Sql    string `json:"sql"`
+	UniqueDBName string `json:"unique_db_name"`
+	Method       string `json:"method"`
+	Url          string `json:"url"`
+	Sql          string `json:"sql"`
 }
 
 func CreateApi(w http.ResponseWriter, r *http.Request) {
 	var params CreateApiReq
 	if err := util.BindJson(r, &params); err != nil {
-		util.ResponseJson(&w, http.StatusInternalServerError, []byte(err.Error()))
+		util.ResponseJson(&w, http.StatusBadRequest, []byte(err.Error()))
+		return
+	}
+
+	dbClient, ok := database.MysqlManage.IsExist(params.UniqueDBName)
+	if !ok {
+		util.ResponseJson(&w, http.StatusBadRequest, []byte(fmt.Sprintf("%s not exist.", params.UniqueDBName)))
 		return
 	}
 
@@ -32,7 +40,7 @@ func CreateApi(w http.ResponseWriter, r *http.Request) {
 	// TODO: 验证sql
 
 	// 注册路由
-	server.GetRouter().RegisterFunc(params.Method, params.Url, inject.CreateHandler(params.Sql))
+	server.GetRouter().RegisterFunc(params.Method, params.Url, inject.CreateHandler(dbClient, params.Sql))
 
 	util.ResponseJson(&w, http.StatusOK, map[string]interface{}{
 		"message": "success",

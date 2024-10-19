@@ -1,15 +1,15 @@
-package api
+package db
 
 import (
-	"github.com/xpfo-go/sql2api/server"
+	"github.com/xpfo-go/sql2api/database"
 	"github.com/xpfo-go/sql2api/util"
 	"net/http"
 )
 
-func ListApi(w http.ResponseWriter, r *http.Request) {
+func ListDB(w http.ResponseWriter, r *http.Request) {
 	util.ResponseJson(&w, http.StatusOK, map[string]interface{}{
 		"message": "success",
-		"data":    server.GetRouter().GetApiList(),
+		"data":    database.MysqlManage.GetClientList(),
 	})
 	return
 }

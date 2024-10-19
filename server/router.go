@@ -54,8 +54,8 @@ func (s *ServeMux) RegisterFunc(method, pattern string, handler http.HandlerFunc
 
 func (s *ServeMux) GetApiList() []string {
 	res := make([]string, 0, len(s.m))
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	for pattern := range s.m {
 		res = append(res, pattern)
@@ -83,9 +83,9 @@ func (s *ServeMux) formatPattern(pattern string) string {
 }
 
 func (s *ServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.mu.Lock()
+	s.mu.RLock()
 	handler, ok := s.m[r.URL.EscapedPath()]
-	s.mu.Unlock()
+	s.mu.RUnlock()
 
 	if !ok || handler.method != r.Method {
 		http.NotFound(w, r)
