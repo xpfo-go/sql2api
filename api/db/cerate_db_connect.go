@@ -1,8 +1,12 @@
 package db
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/xpfo-go/logs"
 	"github.com/xpfo-go/sql2api/database"
+	"github.com/xpfo-go/sql2api/persistence"
+	"github.com/xpfo-go/sql2api/persistence/model"
 	"github.com/xpfo-go/sql2api/util"
 	"net/http"
 )
@@ -37,7 +41,8 @@ func CreateDBConnect(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		client := database.NewMysqlClient(&database.MysqlConfig{
+		// create db connect
+		cfg := &database.MysqlConfig{
 			User:                  params.User,
 			Password:              params.Password,
 			Host:                  params.Host,
@@ -46,14 +51,29 @@ func CreateDBConnect(w http.ResponseWriter, r *http.Request) {
 			MaxOpenConn:           params.MaxOpenConn,
 			MaxIdleConn:           params.MaxIdleConn,
 			ConnMaxLifetimeSecond: params.ConnMaxLifetimeSecond,
-		})
-
+		}
+		client := database.NewMysqlClient(cfg)
 		if err := client.Connect(); err != nil {
+			logs.Error(err.Error())
 			util.ResponseJson(&w, http.StatusInternalServerError, []byte(err.Error()))
 			return
 		}
 
+		// insert sqlite
+		configJson, _ := json.Marshal(cfg)
+		if err := persistence.NewDBConnManage().CreateDBConn(&model.DBConn{
+			DBName:     params.UniqueDBName,
+			DBType:     database.TypeOfMysql,
+			ConfigJson: string(configJson),
+		}); err != nil {
+			logs.Error(err.Error())
+			util.ResponseJson(&w, http.StatusInternalServerError, []byte(err.Error()))
+			return
+		}
+
+		// insert db manage
 		if err := database.MysqlManage.AddClient(params.UniqueDBName, client); err != nil {
+			logs.Error(err.Error())
 			util.ResponseJson(&w, http.StatusInternalServerError, []byte(err.Error()))
 			return
 		}

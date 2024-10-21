@@ -81,16 +81,16 @@ type MysqlClient struct {
 }
 
 type MysqlConfig struct {
-	User     string
-	Password string
-	Host     string
-	Port     int
-	Database string
+	User     string `json:"user"`
+	Password string `json:"password"`
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Database string `json:"database"`
 
 	// have default value
-	MaxOpenConn           int
-	MaxIdleConn           int
-	ConnMaxLifetimeSecond int
+	MaxOpenConn           int `json:"max_open_conn"`
+	MaxIdleConn           int `json:"max_idle_conn"`
+	ConnMaxLifetimeSecond int `json:"conn_max_lifetime_second"`
 }
 
 // TestConnection ...

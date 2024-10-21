@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/xpfo-go/logs"
 	"github.com/xpfo-go/sql2api/api"
+	"github.com/xpfo-go/sql2api/inject"
+	"github.com/xpfo-go/sql2api/persistence"
 	"github.com/xpfo-go/sql2api/server"
 	"os"
 	"os/signal"
@@ -35,22 +37,19 @@ func Start(cmd *cobra.Command) {
 	// 2. watch the signal
 	ctx, cancelFunc := context.WithCancel(context.Background())
 
-	// 3. default database
-	//database.DefaultDBClient = database.NewMysqlClient(&database.MysqlConfig{
-	//	Database: "demo",
-	//	Host:     "127.0.0.1",
-	//	User:     "root",
-	//	Password: "123456",
-	//	Port:     3306,
-	//})
+	// 3. sqlite
+	persistence.InitSqlite(ctx)
 
-	//if err := database.DefaultDBClient.Connect(); err != nil {
-	//	panic(err.Error())
-	//}
-
+	// 4. reload db, api
+	if err := inject.ReloadDatabase(); err != nil {
+		panic(err)
+	}
+	if err := inject.ReloadRouter(); err != nil {
+		panic(err)
+	}
 	api.RegisterRouter()
 
-	// 4. start the server
+	// 5. start the server
 	port, err := cmd.Flags().GetInt("port")
 	if err != nil {
 		panic(err)

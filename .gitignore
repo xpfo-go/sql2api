@@ -33,3 +33,6 @@ logs
 
 # test file
 test
+
+# runtime data
+data

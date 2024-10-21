@@ -2,8 +2,11 @@ package inject
 
 import (
 	"fmt"
+	"github.com/xpfo-go/logs"
 	"github.com/xpfo-go/sql2api/database"
 	"github.com/xpfo-go/sql2api/inject"
+	"github.com/xpfo-go/sql2api/persistence"
+	"github.com/xpfo-go/sql2api/persistence/model"
 	"github.com/xpfo-go/sql2api/server"
 	"github.com/xpfo-go/sql2api/util"
 	"net/http"
@@ -39,6 +42,16 @@ func CreateApi(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: 验证sql
 
+	if err := persistence.NewRouterManage().CreateRouter(&model.Router{
+		Method: params.Method,
+		Router: params.Url,
+		DBName: params.UniqueDBName,
+		SqlStr: params.Sql,
+	}); err != nil {
+		logs.Error(err.Error())
+		util.ResponseJson(&w, http.StatusInternalServerError, []byte(err.Error()))
+		return
+	}
 	// 注册路由
 	server.GetRouter().RegisterFunc(params.Method, params.Url, inject.CreateHandler(dbClient, params.Sql))
 
